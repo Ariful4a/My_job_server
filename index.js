@@ -36,7 +36,13 @@ async function run() {
     const applidJobCollection = client.db("JobBd").collection("job_collection");
 
     app.get('/jobs', async (req, res) => {
-      const jobs = await JobCollection.find().toArray();
+      const email = req.query.email;
+      let query = {};
+      if(email){
+        query = {hrEmail : email}
+      } 
+
+      const jobs = await JobCollection.find(query).toArray();
       res.json(jobs);
     });
 
@@ -74,6 +80,23 @@ app.get('/jobs/:id', async (req, res) => {
 app.post('/job-applications', async (req, res) => {
   const jobApplication = req.body;
   const result = await applidJobCollection.insertOne(jobApplication);
+  const id = jobApplication.jobId;
+  const query = {_id: new ObjectId(id)};
+  const job = await JobCollection.findOne(query);
+  let newCount = 0;
+  if(job.applicationCount){
+    newCount = job.applicationCount + 1;
+  }
+  else{
+    newCount = 1;
+  }
+  const filter = {_id: new ObjectId(id)}
+  const updateDoc = {
+    $set: {
+      applicationCount: newCount
+    }
+  }
+  const updateResult = await JobCollection.updateOne(filter, updateDoc);
   res.send(result);
 })
 
@@ -84,8 +107,28 @@ app.post('/jobs', async (req, res) =>{
   res.send(result);
 });
 
+// my post job view api 
+app.get('/job-applications/jobs/:jobId', async (req, res) => {
+  const job_id = req.params.jobId;
+  const query = {jobId: job_id};
+  const result = await applidJobCollection.find(query).toArray();
+  res.send(result);
+})
 
+// update job Appliclint api
 
+app.patch('/job-applications/:id', async (req, res) => {
+  const id = req.params.id;
+  const updatedJob = req.body;
+  const filter = {_id: new ObjectId(id)};
+  const updateDoc = {
+    $set: {
+      status: updatedJob.status
+    }
+  }
+  const result = await applidJobCollection.updateOne(filter, updateDoc);
+  res.send(result);
+})
 
 
 
