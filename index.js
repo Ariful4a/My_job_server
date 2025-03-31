@@ -34,6 +34,7 @@ async function run() {
 
     const JobCollection = client.db("JobBd").collection("jobs");
     const applidJobCollection = client.db("JobBd").collection("job_collection");
+    const myCourse = client.db("JobBd").collection("Course_collection");
 
     app.get('/jobs', async (req, res) => {
       const email = req.query.email;
@@ -130,6 +131,33 @@ app.patch('/job-applications/:id', async (req, res) => {
   res.send(result);
 })
 
+// My course api
+app.post('/myCourses', async (req, res) => {
+  const course = req.body;
+  const result = await myCourse.insertOne(course);
+  res.send(result);
+})
+
+
+// my course get 
+app.get('/myCourses', async (req, res) => {
+  const email = req.query.email;
+  let query = {};
+  if(email){
+    query = {hrEmail : email}
+  } 
+
+  const result = await myCourse.find(query).toArray();
+  res.send(result);
+});
+
+// detlails course 
+app.get('/myCourses/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)};
+  const result = await myCourse.findOne(query);
+  res.send(result);
+})
 
 
     // Send a ping to confirm a successful connection
