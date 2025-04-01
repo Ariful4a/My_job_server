@@ -35,6 +35,8 @@ async function run() {
     const JobCollection = client.db("JobBd").collection("jobs");
     const applidJobCollection = client.db("JobBd").collection("job_collection");
     const myCourse = client.db("JobBd").collection("Course_collection");
+    const registerCollection = client.db("JobBd").collection("Register_collection");
+    const rivewsCollection = client.db("JobBd").collection("Rivews_collection");
 
     app.get('/jobs', async (req, res) => {
       const email = req.query.email;
@@ -158,6 +160,49 @@ app.get('/myCourses/:id', async (req, res) => {
   const result = await myCourse.findOne(query);
   res.send(result);
 })
+
+
+// 🔹 নতুন ইউজার রেজিস্টার (POST)
+app.post('/register', async (req, res) => {
+  const newUser = req.body;
+  const result = await registerCollection.insertOne(newUser);
+  res.send(result);
+});
+
+// 🔹 সব ইউজার রিটার্ন (GET)
+app.get('/register', async (req, res) => {
+  const result = await registerCollection.find().toArray();
+  res.send(result);
+});
+
+// 🔹 নির্দিষ্ট email দিয়ে ইউজার খোঁজা (GET)
+app.get('/register/email', async (req, res) => {
+  const email = req.query.email;
+  if (!email) {
+      return res.status(400).send({ message: "Email is required" });
+  }
+
+  const user = await registerCollection.findOne({ email: email });
+  if (!user) {
+      return res.status(404).send({ message: "User not found" });
+  }
+
+  res.send(user);
+});
+
+// reviws data load 
+app.post('/reviews', async (req, res) => {
+  const review = req.body;
+  const result = await rivewsCollection.insertOne(review);
+  res.send(result);
+})
+
+// reviws data load  all
+app.get('/reviews', async (req, res) => {
+  const result = await rivewsCollection.find().toArray();
+  res.send(result);
+})
+
 
 
     // Send a ping to confirm a successful connection
